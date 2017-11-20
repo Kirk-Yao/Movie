@@ -10,6 +10,12 @@
     tools:context="kirk.com.movie.ui.activity.MainActivity"
     tools:showIn="@layout/activity_main">
 
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_gravity="center"
+        android:id="@+id/main_swipeRefresh"/>
+
     <com.gigamole.navigationtabstrip.NavigationTabStrip
         android:layout_width="match_parent"
         android:layout_height="50dp"

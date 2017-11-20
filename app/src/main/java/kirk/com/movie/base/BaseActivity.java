@@ -22,9 +22,11 @@ public abstract class BaseActivity extends AppCompatActivity implements SwipeRef
 
     protected final String TAG = getClass().getSimpleName();
 
+    protected abstract void refreshData();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        Logger.d("onCreate");
         super.onCreate(savedInstanceState);
     }
 
@@ -36,7 +38,7 @@ public abstract class BaseActivity extends AppCompatActivity implements SwipeRef
 
     @Override
     public void onRefresh() {
-
+        refreshData();
     }
 
     protected void showLoading(boolean isLoading){
