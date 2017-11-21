@@ -3,11 +3,14 @@ package kirk.com.movie.ui.adapter;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.text.Layout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.orhanobut.logger.Logger;
 
 import java.util.List;
 
@@ -34,7 +37,7 @@ public class MeizhiListAdapter extends RecyclerView.Adapter<MeizhiListAdapter.Me
 
     @Override
     public MeizhiHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.activity_meizhi_list,parent,false);
+        View view = LayoutInflater.from(context).inflate(R.layout.item_meizhi,parent,false);
         MeizhiHolder holder = new MeizhiHolder(view);
         return holder;
     }
@@ -43,8 +46,8 @@ public class MeizhiListAdapter extends RecyclerView.Adapter<MeizhiListAdapter.Me
     public void onBindViewHolder(MeizhiHolder holder, int position) {
         if (girls != null && position >= 0 && position < girls.size()){
             GirlEntity girl = girls.get(position);
-            ImageLoader.load(context,holder.meizhiImage,"");
-            holder.dateTV.setText("");
+            ImageLoader.load(context,holder.meizhiImage,girl.getUrl());
+            holder.dateTV.setText(girl.getDesc());
         }
     }
 
@@ -61,12 +64,12 @@ public class MeizhiListAdapter extends RecyclerView.Adapter<MeizhiListAdapter.Me
 
         public MeizhiHolder(View itemView) {
             super(itemView);
-            ButterKnife.bind(context,itemView);
+            ButterKnife.bind(this,itemView);
         }
 
         @OnClick(R.id.item_meizhi_image)
         public void checkDetail(){
-            // TODO 查看详情
+            // TODO 查看大图
         }
     }
 }
