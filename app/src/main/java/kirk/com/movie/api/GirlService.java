@@ -13,7 +13,7 @@ import retrofit2.http.Path;
  * Created by admin on 2017/11/21.
  */
 
-public interface MeizhiService {
+public interface GirlService {
 
     @GET("api/data/福利/{pagesize}/{page}")
     Observable<GirlListResponse> getGirlList(@Path("pagesize") int pagesize,

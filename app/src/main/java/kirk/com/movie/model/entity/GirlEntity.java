@@ -2,11 +2,13 @@ package kirk.com.movie.model.entity;
 
 import java.util.List;
 
+import kirk.com.movie.ui.adapter.BaseRecyclerViewAdapter;
+
 /**
  * Created by admin on 2017/11/20.
  */
 
-public class GirlEntity {
+public class GirlEntity implements BaseRecyclerViewAdapter.Item{
 
 
     /**

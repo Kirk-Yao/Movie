@@ -2,8 +2,6 @@ package kirk.com.movie.ui.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,44 +23,41 @@ import kirk.com.movie.util.ImageLoader;
  * Created by admin on 2017/11/20.
  */
 
-public class MeizhiListAdapter extends RecyclerView.Adapter<MeizhiListAdapter.MeizhiHolder> {
+public class GirlListAdapter extends StaggeredGridLayoutAdapter {
 
-    private Context context;
-    private List<GirlEntity> girls;
-
-    public MeizhiListAdapter(Context context, List<GirlEntity> girls){
-        this.context = context;
-        this.girls = girls;
+    public GirlListAdapter(Context context,List<GirlEntity> girls){
+        super(context,girls);
     }
 
     @Override
-    public MeizhiHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    protected RecyclerView.ViewHolder createHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_meizhi,parent,false);
-        MeizhiHolder holder = new MeizhiHolder(view);
+        GirlHolder holder = new GirlHolder(view);
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(MeizhiHolder holder, int position) {
-        if (girls != null && position >= 0 && position < girls.size()){
-            GirlEntity girl = girls.get(position);
-            ImageLoader.load(context,holder.meizhiImage,girl.getUrl());
-            holder.dateTV.setText(girl.getDesc());
-        }
+    protected void onBindFooterView(View footerView) {
+
     }
 
     @Override
-    public int getItemCount() {
-        return girls.size();
+    protected void onBindItemView(RecyclerView.ViewHolder holder, Item item) {
+        GirlHolder girlHolder = (GirlHolder) holder;
+        if (item != null){
+            GirlEntity girl = (GirlEntity) item;
+            ImageLoader.load(context,girlHolder.meizhiImage,girl.getUrl());
+            girlHolder.dateTV.setText(girl.getDesc());
+        }
     }
 
-    class MeizhiHolder extends RecyclerView.ViewHolder{
+    class GirlHolder extends RecyclerView.ViewHolder{
         @BindView(R.id.item_meizhi_image)
         ImageView meizhiImage;
         @BindView(R.id.item_meizhi_nameTV)
         TextView dateTV;
 
-        public MeizhiHolder(View itemView) {
+        public GirlHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this,itemView);
         }

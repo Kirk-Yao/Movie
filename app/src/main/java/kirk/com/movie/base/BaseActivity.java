@@ -24,10 +24,13 @@ public abstract class BaseActivity extends AppCompatActivity implements SwipeRef
 
     protected abstract void refreshData();
 
+    protected abstract void initData();
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         Logger.d("onCreate");
         super.onCreate(savedInstanceState);
+
     }
 
     @Override
@@ -39,14 +42,6 @@ public abstract class BaseActivity extends AppCompatActivity implements SwipeRef
     @Override
     public void onRefresh() {
         refreshData();
-    }
-
-    protected void showLoading(boolean isLoading){
-
-    }
-
-    protected void showNetError(){
-        ToastUtil.showShort(this,getResources().getString(R.string.net_error));
     }
 
 }

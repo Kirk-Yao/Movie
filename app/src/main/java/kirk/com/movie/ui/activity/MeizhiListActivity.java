@@ -1,38 +1,32 @@
 package kirk.com.movie.ui.activity;
 
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.orhanobut.logger.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import kirk.com.movie.R;
-import kirk.com.movie.api.MeizhiService;
 import kirk.com.movie.base.BaseActivity;
-import kirk.com.movie.model.entity.GirlListResponse;
-import kirk.com.movie.ui.adapter.MeizhiListAdapter;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
+import kirk.com.movie.base.contract.GirlContract;
+import kirk.com.movie.model.entity.GirlEntity;
+import kirk.com.movie.presenter.GirlPresenter;
+import kirk.com.movie.ui.adapter.GirlListAdapter;
+import kirk.com.movie.ui.customview.OnRecyclerViewScrollListener;
 
 /**
  * Created by admin on 2017/11/20.
  */
 
-public class MeizhiListActivity extends BaseActivity {
+public class MeizhiListActivity extends BaseActivity implements GirlContract.GirlView{
 
     private static final String BASE_URL = "http://gank.io/";
 
@@ -41,61 +35,89 @@ public class MeizhiListActivity extends BaseActivity {
     @BindView(R.id.meizhi_recyclerView)
     RecyclerView recyclerView;
 
+    private GirlPresenter presenter;
+    private List<GirlEntity> girlList;
+    private GirlListAdapter adapter;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meizhi_list);
         ButterKnife.bind(this);
 
+        initData();
+    }
+
+    @Override
+    protected void initData() {
+        presenter = new GirlPresenter();
+        presenter.attachView(this);
+
         refreshLayout.setOnRefreshListener(this);
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        loadData();
+
+        girlList = new ArrayList<>();
+        adapter = new GirlListAdapter(this,girlList);
+        recyclerView.setAdapter(adapter);
+
+        recyclerView.addOnScrollListener(scrollListener);
+
+        presenter.getGirlData();
     }
+
+    private OnRecyclerViewScrollListener scrollListener = new OnRecyclerViewScrollListener() {
+        @Override
+        public void onStart() {
+            Logger.d("onStart()");
+            presenter.getMoreGirlData();
+        }
+
+        @Override
+        public void onLoadMore() {
+            // TODO 在此需要设置，但是使用mvp似乎设置起来并不方便，仍需改善
+        }
+
+        @Override
+        public void onFinish() {
+            setLoading(false);
+        }
+
+    };
 
     @Override
     protected void refreshData() {
         Logger.d("refreshData()");
     }
 
-    private void loadData(){
-        Gson gson = new GsonBuilder()
-                .setDateFormat("yyyy-mm-dd hh:mm:ss")
-                .create();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .build();
-        MeizhiService service = retrofit.create(MeizhiService.class);
-        service.getGirlList(10,1)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<GirlListResponse>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
+    @Override
+    public void showErrorMsg(String msg) {
 
-            }
+    }
 
-            @Override
-            public void onNext(@NonNull GirlListResponse girlListResponse) {
-                Logger.d(girlListResponse.toString());
-                if (girlListResponse != null){
-                    recyclerView.setAdapter(new MeizhiListAdapter(MeizhiListActivity.this,
-                            girlListResponse.getResults()));
-                }
-            }
+    @Override
+    public void showLoading() {
 
-            @Override
-            public void onError(@NonNull Throwable e) {
-                e.printStackTrace();
-            }
+    }
 
-            @Override
-            public void onComplete() {
+    @Override
+    public void showError() {
 
-            }
-        });
+    }
+
+    @Override
+    public void showGirls(List<GirlEntity> list) {
+        Logger.d(list.get(0).getUrl());
+        girlList.addAll(list);
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void showMoreGirls(List<GirlEntity> list) {
+        adapter.hideFooter();
+        int oldSize = girlList.size();
+        girlList.addAll(list);
+        adapter.notifyItemRangeInserted(oldSize,list.size());
+        scrollListener.onFinish();
     }
 }
