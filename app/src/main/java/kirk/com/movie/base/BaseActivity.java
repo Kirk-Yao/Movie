@@ -30,7 +30,6 @@ public abstract class BaseActivity extends AppCompatActivity implements SwipeRef
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         Logger.d("onCreate");
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
