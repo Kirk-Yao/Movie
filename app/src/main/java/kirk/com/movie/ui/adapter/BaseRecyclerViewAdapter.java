@@ -72,7 +72,7 @@ public abstract class BaseRecyclerViewAdapter<T extends BaseRecyclerViewAdapter.
             onBindFooterView(footerHolder.itemView);
         } else {
             if (position >= 0 && position < list.size()){
-                onBindItemView(holder,list.get(position));
+                onBindItemView(holder,list.get(position),position);
             }
         }
     }
@@ -81,7 +81,7 @@ public abstract class BaseRecyclerViewAdapter<T extends BaseRecyclerViewAdapter.
 
     protected abstract void onBindFooterView(View footerView);
 
-    protected abstract void onBindItemView(RecyclerView.ViewHolder holder,T item);
+    protected abstract void onBindItemView(RecyclerView.ViewHolder holder,T item,int position);
 
     public interface Item{
 

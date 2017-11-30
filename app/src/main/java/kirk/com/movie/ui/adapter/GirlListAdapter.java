@@ -1,7 +1,12 @@
 package kirk.com.movie.ui.adapter;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,12 +30,20 @@ import kirk.com.movie.util.ImageLoader;
 
 public class GirlListAdapter extends StaggeredGridLayoutAdapter {
 
+    private ViewGroup viewGroup;
+
+    private ViewPager viewPager;
+    private TextView title;
+
+    private Dialog dialog;
+
     public GirlListAdapter(Context context,List<GirlEntity> girls){
         super(context,girls);
     }
 
     @Override
     protected RecyclerView.ViewHolder createHolder(ViewGroup parent, int viewType) {
+        this.viewGroup = parent;
         View view = LayoutInflater.from(context).inflate(R.layout.item_meizhi,parent,false);
         GirlHolder holder = new GirlHolder(view);
         return holder;
@@ -42,12 +55,22 @@ public class GirlListAdapter extends StaggeredGridLayoutAdapter {
     }
 
     @Override
-    protected void onBindItemView(RecyclerView.ViewHolder holder, Item item) {
+    protected void onBindItemView(RecyclerView.ViewHolder holder, Item item, int position) {
         GirlHolder girlHolder = (GirlHolder) holder;
         if (item != null){
             GirlEntity girl = (GirlEntity) item;
             ImageLoader.load(context,girlHolder.meizhiImage,girl.getUrl());
             girlHolder.dateTV.setText(girl.getDesc());
+
+            girlHolder.meizhiImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (dialog == null){
+                        dialog = createDialog();
+                    }
+                    dialog.show();
+                }
+            });
         }
     }
 
@@ -61,10 +84,20 @@ public class GirlListAdapter extends StaggeredGridLayoutAdapter {
             super(itemView);
             ButterKnife.bind(this,itemView);
         }
+    }
 
-        @OnClick(R.id.item_meizhi_image)
-        public void checkDetail(){
-            // TODO 查看大图
-        }
+    private Dialog createDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(createContentView());
+//        dialog.setContentView(createContentView());
+        return builder.create();
+    }
+
+    private View createContentView(){
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_check_image,viewGroup,false);
+        viewPager = view.findViewById(R.id.dialog_viewPager);
+        DialogPagerAdapter adapter = new DialogPagerAdapter(context,list);
+        viewPager.setAdapter(adapter);
+        return view;
     }
 }

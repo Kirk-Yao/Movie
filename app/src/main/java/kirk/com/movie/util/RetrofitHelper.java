@@ -1,5 +1,7 @@
 package kirk.com.movie.util;
 
+import android.graphics.Movie;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -20,7 +22,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 public class RetrofitHelper {
-    private static final String BASE_URL = "http://gank.io/";
+
+    private static final String MOVIE_BASE_URL = "https://api.douban.com";
 
     private static RetrofitHelper instance;
 
@@ -41,7 +44,7 @@ public class RetrofitHelper {
         builder.addInterceptor(loggingInterceptor);
 
         retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(MOVIE_BASE_URL)
                 .client(builder.build())
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
