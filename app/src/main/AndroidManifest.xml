@@ -22,7 +22,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.activity.MeizhiListActivity"/>
+        <activity android:name=".ui.activity.CheckImageActivity"/>
     </application>
 
 </manifest>

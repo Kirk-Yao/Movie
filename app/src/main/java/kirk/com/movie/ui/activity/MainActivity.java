@@ -1,19 +1,10 @@
 package kirk.com.movie.ui.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 
 import com.orhanobut.logger.Logger;
 
@@ -24,88 +15,105 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import kirk.com.movie.R;
 import kirk.com.movie.base.BaseActivity;
-import kirk.com.movie.base.Constants;
-import kirk.com.movie.base.MovieType;
-import kirk.com.movie.presenter.MoviePresenter;
-import kirk.com.movie.ui.fragment.BaseFragment;
+import kirk.com.movie.base.contract.GirlContract;
+import kirk.com.movie.model.entity.GirlEntity;
+import kirk.com.movie.presenter.GirlPresenter;
+import kirk.com.movie.ui.adapter.GirlListAdapter;
+import kirk.com.movie.ui.customview.OnRecyclerViewScrollListener;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements GirlContract.GirlView{
 
-    @BindView(R.id.main_swipeRefresh)
+    private static final String BASE_URL = "http://gank.io/";
+
+    @BindView(R.id.meizhi_refresh_layout)
     SwipeRefreshLayout refreshLayout;
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
-    @BindView(R.id.fab)
-    FloatingActionButton fab;
-    @BindView(R.id.viewpager)
-    ViewPager viewPager;
+    @BindView(R.id.meizhi_recyclerView)
+    RecyclerView recyclerView;
 
-    private MyPagerAdapter pagerAdapter;
-    private List<Fragment> fragmentList = new ArrayList<>();
-
-    private int curPos = 0;
+    private GirlPresenter presenter;
+    private List<GirlEntity> girlList;
+    private GirlListAdapter adapter;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-
-        setSupportActionBar(toolbar);
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this,MeizhiListActivity.class);
-                startActivity(intent);
-            }
-        });
 
         initData();
     }
 
     @Override
+    protected void initData() {
+        presenter = new GirlPresenter();
+        presenter.attachView(this);
+
+        refreshLayout.setOnRefreshListener(this);
+        StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(layoutManager);
+
+        girlList = new ArrayList<>();
+        adapter = new GirlListAdapter(this,girlList);
+        recyclerView.setAdapter(adapter);
+        adapter.setActivity(MainActivity.this);
+
+        recyclerView.addOnScrollListener(scrollListener);
+
+        presenter.getGirlData();
+    }
+
+    private OnRecyclerViewScrollListener scrollListener = new OnRecyclerViewScrollListener() {
+        @Override
+        public void onStart() {
+            Logger.d("onStart()");
+            presenter.getMoreGirlData();
+        }
+
+        @Override
+        public void onLoadMore() {
+            // TODO 在此需要设置，但是使用mvp似乎设置起来并不方便，仍需改善
+        }
+
+        @Override
+        public void onFinish() {
+            setLoading(false);
+        }
+
+    };
+
+    @Override
     protected void refreshData() {
-        Logger.d("refreshing data");
+        Logger.d("refreshData()");
     }
 
     @Override
-    protected void initData() {
-        FragmentManager manager = getSupportFragmentManager();
-        if (pagerAdapter == null){
-            pagerAdapter = new MyPagerAdapter(manager);
-            viewPager.setAdapter(pagerAdapter);
-        }
+    public void showErrorMsg(String msg) {
 
-        for (int i = 0; i < 1; i++){
-            MoviePresenter presenter = new MoviePresenter(i);
-            fragmentList.add(new BaseFragment<>(presenter));
-        }
     }
 
-    private BaseFragment getCurFragment(){
-        return (BaseFragment) fragmentList.get(curPos);
+    @Override
+    public void showLoading() {
+
     }
 
-    public class MyPagerAdapter extends FragmentStatePagerAdapter {
+    @Override
+    public void showError() {
 
-        public MyPagerAdapter(FragmentManager fm) {
-            super(fm);
-            Logger.d("init pager");
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            Logger.d("getItem():" + position);
-            return fragmentList.get(position);
-        }
-
-        @Override
-        public int getCount() {
-//            return Constants.CATEGORYS.length;
-            return 1;
-        }
     }
 
+    @Override
+    public void showGirls(List<GirlEntity> list) {
+        Logger.d(list.get(0).getUrl());
+        girlList.addAll(list);
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void showMoreGirls(List<GirlEntity> list) {
+        adapter.hideFooter();
+        int oldSize = girlList.size();
+        girlList.addAll(list);
+        adapter.notifyItemRangeInserted(oldSize,list.size());
+        scrollListener.onFinish();
+    }
 }

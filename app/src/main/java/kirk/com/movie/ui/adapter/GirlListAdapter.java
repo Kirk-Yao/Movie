@@ -1,8 +1,13 @@
 package kirk.com.movie.ui.adapter;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Parcelable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +20,7 @@ import android.widget.TextView;
 
 import com.orhanobut.logger.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -22,6 +28,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import kirk.com.movie.R;
 import kirk.com.movie.model.entity.GirlEntity;
+import kirk.com.movie.ui.activity.CheckImageActivity;
 import kirk.com.movie.util.ImageLoader;
 
 /**
@@ -30,20 +37,22 @@ import kirk.com.movie.util.ImageLoader;
 
 public class GirlListAdapter extends StaggeredGridLayoutAdapter {
 
-    private ViewGroup viewGroup;
+    private Activity activity;
 
-    private ViewPager viewPager;
-    private TextView title;
-
-    private Dialog dialog;
+    public static final String GIRL_LIST = "girlList";
+    public static final String POSITION = "position";
+    public static final String SMALL_PIC_SIZE = "smallSize";
 
     public GirlListAdapter(Context context,List<GirlEntity> girls){
         super(context,girls);
     }
 
+    public void setActivity(Activity activity){
+        this.activity = activity;
+    }
+
     @Override
     protected RecyclerView.ViewHolder createHolder(ViewGroup parent, int viewType) {
-        this.viewGroup = parent;
         View view = LayoutInflater.from(context).inflate(R.layout.item_meizhi,parent,false);
         GirlHolder holder = new GirlHolder(view);
         return holder;
@@ -55,8 +64,8 @@ public class GirlListAdapter extends StaggeredGridLayoutAdapter {
     }
 
     @Override
-    protected void onBindItemView(RecyclerView.ViewHolder holder, Item item, int position) {
-        GirlHolder girlHolder = (GirlHolder) holder;
+    protected void onBindItemView(final RecyclerView.ViewHolder holder, Item item, final int position) {
+        final GirlHolder girlHolder = (GirlHolder) holder;
         if (item != null){
             GirlEntity girl = (GirlEntity) item;
             ImageLoader.load(context,girlHolder.meizhiImage,girl.getUrl());
@@ -65,13 +74,23 @@ public class GirlListAdapter extends StaggeredGridLayoutAdapter {
             girlHolder.meizhiImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (dialog == null){
-                        dialog = createDialog();
-                    }
-                    dialog.show();
+                    jumpToChcekActivity(position,girlHolder.meizhiImage);
                 }
             });
         }
+    }
+
+    private void jumpToChcekActivity(int position,View view){
+        Intent intent = new Intent(context, CheckImageActivity.class);
+        intent.putParcelableArrayListExtra(GIRL_LIST, (ArrayList<? extends Parcelable>) list);
+        intent.putExtra(POSITION,position);
+
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        intent.putExtra(SMALL_PIC_SIZE,new int[]{layoutParams.width,layoutParams.height});
+
+        ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                activity,view,CheckImageActivity.VIEW_NAME);
+        ActivityCompat.startActivity(context,intent,optionsCompat.toBundle());
     }
 
     class GirlHolder extends RecyclerView.ViewHolder{
@@ -84,20 +103,5 @@ public class GirlListAdapter extends StaggeredGridLayoutAdapter {
             super(itemView);
             ButterKnife.bind(this,itemView);
         }
-    }
-
-    private Dialog createDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setView(createContentView());
-//        dialog.setContentView(createContentView());
-        return builder.create();
-    }
-
-    private View createContentView(){
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_check_image,viewGroup,false);
-        viewPager = view.findViewById(R.id.dialog_viewPager);
-        DialogPagerAdapter adapter = new DialogPagerAdapter(context,list);
-        viewPager.setAdapter(adapter);
-        return view;
     }
 }

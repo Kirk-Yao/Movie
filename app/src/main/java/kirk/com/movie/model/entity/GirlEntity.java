@@ -1,5 +1,8 @@
 package kirk.com.movie.model.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 
 import kirk.com.movie.ui.adapter.BaseRecyclerViewAdapter;
@@ -8,7 +11,7 @@ import kirk.com.movie.ui.adapter.BaseRecyclerViewAdapter;
  * Created by admin on 2017/11/20.
  */
 
-public class GirlEntity implements BaseRecyclerViewAdapter.Item{
+public class GirlEntity implements BaseRecyclerViewAdapter.Item,Parcelable{
 
 
     /**
@@ -32,6 +35,30 @@ public class GirlEntity implements BaseRecyclerViewAdapter.Item{
     private String url;
     private boolean used;
     private String who;
+
+    protected GirlEntity(Parcel in) {
+        _id = in.readString();
+        createdAt = in.readString();
+        desc = in.readString();
+        publishedAt = in.readString();
+        source = in.readString();
+        type = in.readString();
+        url = in.readString();
+        used = in.readByte() != 0;
+        who = in.readString();
+    }
+
+    public static final Creator<GirlEntity> CREATOR = new Creator<GirlEntity>() {
+        @Override
+        public GirlEntity createFromParcel(Parcel in) {
+            return new GirlEntity(in);
+        }
+
+        @Override
+        public GirlEntity[] newArray(int size) {
+            return new GirlEntity[size];
+        }
+    };
 
     public String get_id() {
         return _id;
@@ -105,4 +132,22 @@ public class GirlEntity implements BaseRecyclerViewAdapter.Item{
         this.who = who;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+
+        parcel.writeString(_id);
+        parcel.writeString(createdAt);
+        parcel.writeString(desc);
+        parcel.writeString(publishedAt);
+        parcel.writeString(source);
+        parcel.writeString(type);
+        parcel.writeString(url);
+        parcel.writeByte((byte) (used ? 1 : 0));
+        parcel.writeString(who);
+    }
 }

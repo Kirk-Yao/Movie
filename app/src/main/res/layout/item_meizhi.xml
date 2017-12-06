@@ -9,15 +9,16 @@
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:id="@+id/item_meizhi_image"
-        android:scaleType="centerCrop"/>
+        />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@android:color/darker_gray"
         android:layout_alignParentBottom="true"
         android:textSize="20sp"
         android:padding="5dp"
-        android:layout_marginLeft="10dp"
+        android:alpha="0.8"
         android:textColor="@android:color/white"
         android:id="@+id/item_meizhi_nameTV"/>
 </RelativeLayout>
